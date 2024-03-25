@@ -2,14 +2,14 @@ import React, { createContext, useContext, useReducer } from "react";
 
 const AuthContext = createContext()
 
-const initialState = { isAuthtenticated: false, user: {} }
+const initialState = { isAuthenticated: false, user: {} }
 
 const reducer = (state, { type, payload }) => {
     switch (type) {
         case "LOGIN":
-            return Object.assign({}, { isAuthtenticated: true, user: payload })
+            return Object.assign({}, { isAuthenticated: true, user: payload })
         case "LOGOUT":
-            return Object.assign({}, { isAuthtenticated: false })
+            return Object.assign({}, { isAuthenticated: false })
         default:
             return state
     }

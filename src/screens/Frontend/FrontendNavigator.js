@@ -13,7 +13,7 @@ import Profile from './Profile';
 const Tab = createBottomTabNavigator();
 export default function FrontendNavigator() {
     return (
-        <Tab.Navigator initialRouteName={"Home"} screenOptions={{ headerShown: false }}>
+        <Tab.Navigator initialRouteName={"Home"} screenOptions={{ headerShown: false }} styles={styles.container}>
             <Tab.Group>
                 <Tab.Screen name="Home" component={Home} options={{ tabBarIcon: (({ color, size }) => (<Icon name="home" color={color} size={size} />)) }} />
                 <Tab.Screen name="my-course" component={MyCourse} options={{ tabBarIcon: (({ color, size }) => (<Icon name="book-open-blank-variant" color={color} size={size} />)) }} />
@@ -24,4 +24,10 @@ export default function FrontendNavigator() {
     )
 }
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+        marginTop: 20
+    }
+})

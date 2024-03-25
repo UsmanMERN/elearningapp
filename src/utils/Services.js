@@ -18,6 +18,4 @@ export const getData = async (key) => {
         return null; // Return null in case of an error
     }
 };
-
-
 // export default { storeData, getData }

@@ -21,7 +21,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 // const Tab = createBottomTabNavigator();
 
 export default function AppNavigator() {
-    const { isAuthtenticated, dispatch } = useAuthContext();
+    const { isAuthenticated, dispatch } = useAuthContext();
     const [isLoading, setIsLoading] = useState(true);
     const [user, setUser] = useState(null);
 
@@ -72,7 +72,7 @@ export default function AppNavigator() {
 
     return (
         <NavigationContainer>
-            {isAuthtenticated ? (
+            {isAuthenticated ? (
                 <FrontendNavigator />
             ) : (
                 <AuthNavigator />
