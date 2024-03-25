@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, View } from 'react-native'
+import { ScrollView, StyleSheet, View } from 'react-native'
 
 import auth from '@react-native-firebase/auth';
 // screen
@@ -26,14 +26,19 @@ export default function Home() {
     };
 
     return (
-        <View>
-            <View style={styles.headerContainer}>
-                <Header />
+        <ScrollView showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false}>
+            <View >
+                <View style={styles.headerContainer}>
+                    <Header />
+                </View>
+                <View style={{ marginTop: -90 }}>
+                    <CourseList level={"Basic"} textColor={Colors.WHITE} />
+                    <CourseList level={"Advance"} />
+                    <CourseList level={"Advance"} />
+                    <CourseList level={"Advance"} />
+                </View>
             </View>
-            <View>
-                <CourseList />
-            </View>
-        </View>
+        </ScrollView>
 
     )
 }

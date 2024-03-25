@@ -7,6 +7,7 @@ import Icon from "react-native-vector-icons/Ionicons"
 
 import Colors from '../../utils/Colors'
 import CoinIcon from "../../assets/images/Coin.png"
+import avatar from "../../assets/images/avatar.png"
 
 export default function Header() {
     const { user, isAuthenticated } = useAuthContext()
@@ -15,7 +16,7 @@ export default function Header() {
         <View>
             <View style={styles.container}>
                 <View style={styles.topbar}>
-                    <Image source={{ uri: user?.photoURL }} style={styles.avatar} />
+                    <Image source={user?.photoURL ? { uri: user.photoURL } : avatar} style={styles.avatar} />
                     <View>
                         <Text style={styles.welcomeTxt}>Welcome,</Text>
                         <Text style={styles.nameTxt}>{user?.displayName}</Text>

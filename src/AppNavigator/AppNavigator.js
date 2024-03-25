@@ -9,13 +9,14 @@ import auth from '@react-native-firebase/auth';
 // screens
 // import Home from '../screens/frontend/Home';
 // import Login from '../screens/auth/Login';
-import FrontendNavigator from '../screens/Frontend/FrontendNavigator';
+import FrontendNavigator from '../screens/Frontend/Navigations/FrontendNavigator';
 import AuthNavigator from '../screens/Auth/AuthNavigator';
 
 // services
 import { useAuthContext } from '../contexts/Authcontext';
 import { getData } from '../utils/Services';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import Colors from '../utils/Colors';
 
 // const Stack = createNativeStackNavigator();
 // const Tab = createBottomTabNavigator();
@@ -65,7 +66,7 @@ export default function AppNavigator() {
     if (isLoading) {
         return (
             <View style={styles.container}>
-                <ActivityIndicator size="large" color="#0000ff" />
+                <ActivityIndicator size="large" color={Colors.PRIMARY} />
             </View>
         )
     }
@@ -86,5 +87,6 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: Colors.WHITE
     },
 });
