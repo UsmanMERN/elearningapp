@@ -33,7 +33,8 @@ local.properties
 .cxx/
 *.keystore
 !debug.keystore
-
+android/app/google-services.json
+.env
 # node.js
 #
 node_modules/
@@ -64,3 +65,5 @@ yarn-error.log
 
 # testing
 /coverage
+
+android/app/google-services.json
