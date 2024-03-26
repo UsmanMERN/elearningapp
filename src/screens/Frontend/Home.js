@@ -1,5 +1,5 @@
 import React from 'react'
-import { ScrollView, StyleSheet, View } from 'react-native'
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 import auth from '@react-native-firebase/auth';
 // screen
@@ -24,7 +24,6 @@ export default function Home() {
             console.error('Error signing out:', error);
         }
     };
-
     return (
         <ScrollView showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false}>
             <View >
@@ -34,9 +33,10 @@ export default function Home() {
                 <View style={{ marginTop: -90 }}>
                     <CourseList level={"Basic"} textColor={Colors.WHITE} />
                     <CourseList level={"Advance"} />
-                    <CourseList level={"Advance"} />
-                    <CourseList level={"Advance"} />
                 </View>
+                <TouchableOpacity onPress={handleLogout}>
+                    <Text style={{ color: "#000" }}>click me</Text>
+                </TouchableOpacity>
             </View>
         </ScrollView>
 

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth';
+import { FIREBASE, GRAPGQL } from "@env"
 
 import Home from "../../assets/images/home.png"
 import google from "../../assets/images/google.png"
@@ -14,7 +15,7 @@ const Login = () => {
 
     useEffect(() => {
         GoogleSignin.configure({
-            webClientId: '664240224906-btgssahcr35idtvq5h2theiiurg67tih.apps.googleusercontent.com',
+            webClientId: FIREBASE,
         });
     }, [])
 

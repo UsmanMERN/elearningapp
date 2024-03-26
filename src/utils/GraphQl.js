@@ -1,7 +1,7 @@
 import { request, gql } from "graphql-request"
+import { GRAPGQL } from "@env"
 
-
-const MASTER_URL = 'https://api-ap-south-1.hygraph.com/v2/clu5rdkj40bl207w61zuc8arh/master'
+const MASTER_URL = GRAPGQL
 
 export const getCourseList = async (level) => {
   const query = gql`query CourseList {
