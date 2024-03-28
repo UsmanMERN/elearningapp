@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth';
-import { FIREBASE, GRAPGQL } from "@env"
+import { FIREBASE } from "@env"
+import Snackbar from 'react-native-snackbar';
 
 import Home from "../../assets/images/home.png"
 import google from "../../assets/images/google.png"
@@ -31,6 +32,13 @@ const Login = () => {
             if (currentUser) {
                 await storeData("login", 'true');
                 await dispatch({ type: "LOGIN", payload: currentUser });
+                Snackbar.show({
+                    text: 'Login Successfully',
+                    duration: Snackbar.LENGTH_SHORT,
+                    backgroundColor: Colors.PRIMARY,
+                    textAlign: 'center',
+                    fontFamily: "Outfit-SemiBold",
+                })
             } else {
                 console.error("Unable to retrieve current user after sign-in.");
             }
@@ -38,7 +46,6 @@ const Login = () => {
             console.error("Error occurred during Google sign-in:", error);
         }
     }
-
 
     return (
         <View style={styles.container}>

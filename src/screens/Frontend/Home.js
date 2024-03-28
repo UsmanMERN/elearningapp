@@ -1,47 +1,52 @@
-import React from 'react'
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-
+import React from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import auth from '@react-native-firebase/auth';
-// screen
 import Header from '../../components/frontend/Header';
-// services
 import { storeData } from '../../utils/Services';
 import { useAuthContext } from '../../contexts/Authcontext';
 import Colors from '../../utils/Colors';
 import CourseList from '../../components/frontend/CourseList';
+import Snackbar from 'react-native-snackbar';
 
-export default function Home() {
-    const { dispatch, user } = useAuthContext()
+const Home = () => {
+    const { dispatch } = useAuthContext();
 
-    const handleLogout = async () => {
-        try {
-            await auth().signOut().then(async () => {
-                await storeData("login", 'false')
-                await dispatch({ type: "LOGOUT", payload: {} })
+    const handleLogout = () => {
+        auth().signOut()
+            .then(() => {
+                storeData("login", 'false');
+                dispatch({ type: "LOGOUT", payload: {} });
+                Snackbar.show({
+                    text: 'Logout Successfully',
+                    duration: Snackbar.LENGTH_SHORT,
+                    backgroundColor: Colors.WHITE,
+                    textAlign: 'center',
+                    fontFamily: "Outfit-SemiBold",
+                    textColor: Colors.PRIMARY
+                })
             })
-
-        } catch (error) {
-            console.error('Error signing out:', error);
-        }
+            .catch(error => {
+                console.error('Error signing out:', error);
+            });
     };
+
     return (
-        <ScrollView showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false}>
-            <View >
+        <>
+            <ScrollView showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false}>
                 <View style={styles.headerContainer}>
                     <Header />
                 </View>
                 <View style={{ marginTop: -90 }}>
-                    <CourseList level={"Basic"} textColor={Colors.WHITE} />
-                    <CourseList level={"Advance"} />
+                    <CourseList level="Basic" textColor={Colors.WHITE} />
                 </View>
+                <CourseList level="Advance" />
                 <TouchableOpacity onPress={handleLogout}>
-                    <Text style={{ color: "#000" }}>click me</Text>
+                    <Text style={{ color: "#000" }}>Click me</Text>
                 </TouchableOpacity>
-            </View>
-        </ScrollView>
-
-    )
-}
+            </ScrollView>
+        </>
+    );
+};
 
 const styles = StyleSheet.create({
     headerContainer: {
@@ -49,4 +54,6 @@ const styles = StyleSheet.create({
         height: 250,
         padding: 15
     }
-})
+});
+
+export default Home;

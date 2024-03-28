@@ -1,20 +1,38 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React from 'react';
 import Icon from "react-native-vector-icons/Ionicons";
-import Colors from '../utils/Colors';
+import Colors from '../../utils/Colors';
+import Snackbar from 'react-native-snackbar';
+import { useNavigation } from '@react-navigation/native';
 
-export default function ChapterSection({ chapters }) {
+export default function ChapterSection({ chapters, userEnrolledCourses }) {
+    const navigation = useNavigation()
+
+    const handleChapterPress = (content) => {
+        if (userEnrolledCourses.length == 0) {
+            Snackbar.show({
+                text: "Please Enroll Course!",
+                duration: Snackbar.LENGTH_SHORT,
+                backgroundColor: Colors.PRIMARY,
+                textAlign: 'center',
+                fontFamily: "Outfit-SemiBold"
+            })
+            return
+        } else {
+            navigation.navigate('chapter-content', { content })
+        }
+    }
+
     return (
         <ScrollView>
             <View style={styles.container}>
                 <Text style={{ color: '#000', fontFamily: "Outfit-SemiBold", fontSize: 22, marginBottom: 10 }}>Chapters</Text>
                 {chapters?.map((item, i) => {
                     return (
-                        <View style={styles.chapterContainer} key={i + 1}>
+                        <TouchableOpacity style={[styles.chapterContainer]} key={i + 1} onPress={() => handleChapterPress(item.content)}>
                             <Text style={styles.chapterNumber}>{i + 1}</Text>
                             <Text numberOfLines={1} ellipsizeMode="tail" style={styles.chapterTitle}>{item.title}</Text>
-                            <Icon name="lock-closed-outline" size={20} color={Colors.GRAY} />
-                        </View>
+                            {userEnrolledCourses.length === 0 ? <Icon name="lock-closed-outline" size={20} color={Colors.GRAY} /> : <Icon name="play" size={20} color={Colors.GRAY} />}</TouchableOpacity>
                     )
                 })}
             </View>

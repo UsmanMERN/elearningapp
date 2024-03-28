@@ -20,9 +20,11 @@ export const getCourseList = async (level) => {
         heading
         description {
           markdown
+          html
         }
         output {
           markdown
+          html
         }
       }
     }
@@ -31,6 +33,24 @@ export const getCourseList = async (level) => {
     }
     banner{
       url
+    }
+  }
+}`
+
+  const result = await request(MASTER_URL, query)
+  return result
+}
+
+
+export const getEnrolledCourse = async (courseId, userEmail) => {
+  const query = gql`query MyQuery {
+  userEnrolledCourses(
+    where: {courseId: "`+ courseId + `", userEmail: "` + userEmail + `"}
+  ) {
+    id
+    courseId
+    completedChapter {
+      chapterId
     }
   }
 }`
