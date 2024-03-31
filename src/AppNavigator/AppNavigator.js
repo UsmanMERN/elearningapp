@@ -11,6 +11,7 @@ import { useAuthContext } from '../contexts/Authcontext';
 import { getData } from '../utils/Services';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import Colors from '../utils/Colors';
+import { getUserPoints } from '../utils/GraphQl';
 
 export default function AppNavigator() {
     const { isAuthenticated, dispatch } = useAuthContext();
@@ -23,6 +24,9 @@ export default function AppNavigator() {
                 setUser(firebaseUser);
                 const result = await getData('login');
                 if (result === 'true') {
+                    await getUserPoints(firebaseUser.email).then((resp) => {
+                        dispatch({ type: "ADD_POINTS", payload: resp?.userDetails[0]?.point });
+                    })
                     dispatch({ type: "LOGIN", payload: firebaseUser });
                 }
                 unsubscribe();

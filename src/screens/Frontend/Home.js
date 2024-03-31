@@ -7,6 +7,7 @@ import { useAuthContext } from '../../contexts/Authcontext';
 import Colors from '../../utils/Colors';
 import CourseList from '../../components/frontend/CourseList';
 import Snackbar from 'react-native-snackbar';
+import CourseProgress from '../../components/frontend/CourseProgress';
 
 const Home = () => {
     const { dispatch } = useAuthContext();
@@ -37,8 +38,10 @@ const Home = () => {
                     <Header />
                 </View>
                 <View style={{ marginTop: -90 }}>
-                    <CourseList level="Basic" textColor={Colors.WHITE} />
+                    <CourseProgress level="Advance" textColor={Colors.WHITE} />
                 </View>
+                <CourseList level="Basic" />
+                <CourseList level="Moderate" />
                 <CourseList level="Advance" />
                 <TouchableOpacity onPress={handleLogout}>
                     <Text style={{ color: "#000" }}>Click me</Text>

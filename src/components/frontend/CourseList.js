@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -12,18 +12,16 @@ export default function CourseList({ level, textColor }) {
     const [isLoading, setIsLoading] = useState(true);
     const [courseList, setCourseList] = useState([]);
 
-    const memoizedGetCourseList = useMemo(() => {
-        return async () => {
-            try {
-                setIsLoading(true);
-                const res = await getCourseList(level);
-                setCourseList(res?.courses);
-            } catch (error) {
-                console.error('Error fetching course list:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
+    const memoizedGetCourseList = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            const res = await getCourseList(level);
+            setCourseList(res?.courses);
+        } catch (error) {
+            console.error('Error fetching course list:', error);
+        } finally {
+            setIsLoading(false);
+        }
     }, [level]);
 
     useEffect(() => {

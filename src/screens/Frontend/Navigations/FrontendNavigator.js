@@ -13,12 +13,12 @@ import HomeScreenNavigations from './HomeScreenNavigations';
 const Tab = createBottomTabNavigator();
 export default function FrontendNavigator() {
     return (
-        <Tab.Navigator initialRouteName={"Home"} screenOptions={{ headerShown: false }} styles={styles.container}>
-            <Tab.Group>
+        <Tab.Navigator initialRouteName={"Home"} screenOptions={{ headerShown: false, }} styles={styles.container}>
+            <Tab.Group >
                 <Tab.Screen name="Home" component={HomeScreenNavigations} options={{ tabBarIcon: (({ color, size }) => (<Icon name="home" color={color} size={size} />)) }} />
-                <Tab.Screen name="my-course" component={MyCourse} options={{ tabBarIcon: (({ color, size }) => (<Icon name="book-open-blank-variant" color={color} size={size} />)) }} />
-                <Tab.Screen name="leaderboard" component={LeaderBoard} options={{ tabBarIcon: (({ color, size }) => (<MaterialIcon name="leaderboard" color={color} size={size} />)) }} />
-                <Tab.Screen name="profile" component={Profile} options={{ tabBarIcon: (({ color, size }) => (<MaterialIcon name="supervised-user-circle" color={color} size={size} />)) }} />
+                <Tab.Screen name="my-course" component={MyCourse} options={{ tabBarLabel: "My Courses", tabBarIcon: (({ color, size }) => (<Icon name="book-open-blank-variant" color={color} size={size} />)) }} />
+                <Tab.Screen name="leaderboard" component={LeaderBoard} options={{ tabBarLabel: "LeaderBoard", tabBarIcon: (({ color, size }) => (<MaterialIcon name="leaderboard" color={color} size={size} />)) }} />
+                <Tab.Screen name="profile" component={Profile} options={{ tabBarLabel: "Profile", tabBarIcon: (({ color, size }) => (<MaterialIcon name="supervised-user-circle" color={color} size={size} />)) }} />
             </Tab.Group>
         </Tab.Navigator>
     )

@@ -6,16 +6,17 @@ import OptionItems from '../../components/frontend/OptionItems';
 import ChapterSection from '../../components/frontend/ChapterSection';
 
 import Colors from '../../utils/Colors';
-import { enrollCourses, getEnrolledCourse } from '../../utils/GraphQl';
+import { enrollCourses, getEnrolledCourse, updateUserPoints } from '../../utils/GraphQl';
 import { useAuthContext } from '../../contexts/Authcontext';
 import Snackbar from 'react-native-snackbar';
 
 const CoursesDetails = () => {
     const navigation = useNavigation();
     const { params } = useRoute();
-    const { user } = useAuthContext();
+    const { user, dispatch, points } = useAuthContext();
 
     const [isLoading, setIsLoading] = useState(false);
+    const [isCourseLoading, setIsCourseLoading] = useState(true);
     const [courseDetails, setCourseDetails] = useState(null);
     const [userEnrolledCourseList, setUserEnrolledCourseList] = useState([]);
 
@@ -25,25 +26,23 @@ const CoursesDetails = () => {
         }
     }, [params?.course]);
 
-    const userEnrolledToCourse = async () => {
+    const userEnrolledToCourse = useCallback(async () => {
         try {
             setIsLoading(true);
-            await enrollCourses(courseDetails?.id, user?.email).then(res => {
-                if (res) {
-                    getEnrolledCourse().then(() => {
-                        setIsLoading(false);
-                        Snackbar.show({
-                            text: 'Course Enrolled Successfully',
-                            duration: Snackbar.LENGTH_SHORT,
-                            backgroundColor: Colors.PRIMARY,
-                            textAlign: 'center',
-                            fontFamily: "Outfit-SemiBold"
-                        })
-                    });
-                }
-            });
+            const enrollResponse = await enrollCourses(courseDetails?.id, user?.email);
+            if (enrollResponse) {
+                const totalPoints = Number(points) + 10;
+                Snackbar.show({
+                    text: 'Course Enrolled Successfully',
+                    duration: Snackbar.LENGTH_SHORT,
+                    backgroundColor: Colors.PRIMARY,
+                    textAlign: 'center',
+                    fontFamily: "Outfit-SemiBold"
+                });
+                const updateUserResponse = await updateUserPoints(user?.email, totalPoints);
+                dispatch({ type: "ADD_POINTS", payload: updateUserResponse?.updateUserDetail?.point });
+            }
         } catch (error) {
-            setIsLoading(false);
             console.error('Error enrolling user:', error);
             Snackbar.show({
                 text: 'Error Enrolling Course',
@@ -51,84 +50,93 @@ const CoursesDetails = () => {
                 backgroundColor: Colors.PRIMARY,
                 textAlign: 'center',
                 fontFamily: "Outfit-SemiBold"
-            })
+            });
+        } finally {
+            setIsLoading(false);
         }
-    };
+    }, [courseDetails, user]);
 
     const getUserEnrolledCourse = useCallback(async () => {
         try {
-            await getEnrolledCourse(courseDetails?.id, user?.email).then(resp => {
-                setUserEnrolledCourseList(resp.userEnrolledCourses);
-            })
+            const response = await getEnrolledCourse(courseDetails?.id, user?.email);
+            setUserEnrolledCourseList(response.userEnrolledCourses);
         } catch (error) {
             console.error('Error fetching user enrolled courses:', error);
+        } finally {
+            setIsCourseLoading(false);
         }
-    }, [courseDetails?.id, user?.email]);
+    }, [courseDetails, user, points]);
 
     useEffect(() => {
         const fetchUserEnrolledCourse = async () => {
             try {
                 await getUserEnrolledCourse();
             } catch (error) {
-                setIsLoading(false);
                 console.error('Error fetching user enrolled courses:', error);
             }
         };
 
         fetchUserEnrolledCourse();
-    }, [getUserEnrolledCourse, userEnrolledToCourse]);
-
+    }, [getUserEnrolledCourse]);
 
     return (
-        <ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
-            <View style={styles.container}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Icon name="arrow-circle-left" size={30} color={Colors.PRIMARY} />
-                </TouchableOpacity>
-                {courseDetails && (
-                    <View style={styles.courseDetailsContainer}>
-                        <Image source={{ uri: courseDetails?.banner?.url }} style={styles.courseImage} />
-                        <Text style={styles.courseTitle}>{courseDetails?.name}</Text>
-                        <View>
-                            <View style={styles.rowStyle}>
-                                <OptionItems icon="book-outline" value={`${courseDetails.chapters?.length} chapters`} />
-                                <OptionItems icon="time-outline" value={`${courseDetails.time} hr`} />
+        <>
+            {isCourseLoading && (
+                <View style={styles.loaderContainer}>
+                    <ActivityIndicator color={Colors.PRIMARY} size="large" />
+                </View>
+            )}
+            {!isCourseLoading && <ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+                <View style={styles.container}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                        <Icon name="arrow-circle-left" size={30} color={Colors.PRIMARY} />
+                    </TouchableOpacity>
+                    {courseDetails && (
+                        <View style={styles.courseDetailsContainer}>
+                            <Image source={{ uri: courseDetails?.banner?.url }} style={styles.courseImage} />
+                            <Text style={styles.courseTitle}>{courseDetails?.name}</Text>
+                            <View>
+                                <View style={styles.rowStyle}>
+                                    <OptionItems icon="book-outline" value={`${courseDetails.chapters?.length} chapters`} />
+                                    <OptionItems icon="time-outline" value={`${courseDetails.time} hr`} />
+                                </View>
+                                <View style={styles.rowStyle}>
+                                    <OptionItems icon="person-circle-outline" value={courseDetails.author} />
+                                    <OptionItems icon="cellular-outline" value={courseDetails.level} />
+                                </View>
                             </View>
-                            <View style={styles.rowStyle}>
-                                <OptionItems icon="person-circle-outline" value={courseDetails.author} />
-                                <OptionItems icon="cellular-outline" value={courseDetails.level} />
+                            <Text style={styles.descriptionTitle}>Description</Text>
+                            <Text style={styles.descriptionText}>{courseDetails.description?.markdown}</Text>
+                            <View style={styles.enrollButtonsContainer}>
+                                {userEnrolledCourseList && userEnrolledCourseList?.length === 0 && (
+                                    <TouchableOpacity onPress={isLoading ? null : userEnrolledToCourse} disabled={isLoading} style={[styles.enrollButton, { backgroundColor: Colors.PRIMARY }]}>
+                                        {isLoading ? (
+                                            <View style={styles.enrollContent}>
+                                                <Text style={styles.enrollButtonText}>Enrolling </Text>
+                                                <ActivityIndicator size="small" color={Colors.WHITE} />
+                                            </View>
+                                        ) : (
+                                            <Text style={styles.enrollButtonText}>Enroll For Free</Text>
+                                        )}
+                                    </TouchableOpacity>
+                                )}
+                                <TouchableOpacity style={[styles.enrollButton, { backgroundColor: Colors.SECONDARY }]}>
+                                    <Text style={styles.enrollButtonText}>Memberships $2.99/Month</Text>
+                                </TouchableOpacity>
                             </View>
                         </View>
-                        <Text style={styles.descriptionTitle}>Description</Text>
-                        <Text style={styles.descriptionText}>{courseDetails.description?.markdown}</Text>
-                        {<View style={styles.enrollButtonsContainer}>
-                            {userEnrolledCourseList && userEnrolledCourseList?.length === 0 && (
-                                <TouchableOpacity onPress={userEnrolledToCourse} style={[styles.enrollButton, { backgroundColor: Colors.PRIMARY }]}>
-                                    {isLoading ? (
-                                        <View style={styles.enrollContent}>
-                                            <Text style={styles.enrollButtonText}>Enrolling </Text>
-                                            <ActivityIndicator size="small" color={Colors.WHITE} />
-                                        </View>
-                                    ) : (
-                                        <Text style={styles.enrollButtonText}>Enroll For Free</Text>
-                                    )}
-                                </TouchableOpacity>
-                            )}
-                            <TouchableOpacity style={[styles.enrollButton, { backgroundColor: Colors.SECONDARY }]}>
-                                <Text style={styles.enrollButtonText}>Memberships $2.99/Month</Text>
-                            </TouchableOpacity>
-                        </View>}
-                    </View>
-                )}
-                {courseDetails?.chapters && <ChapterSection chapters={courseDetails?.chapters} userEnrolledCourses={userEnrolledCourseList} />}
-            </View>
-        </ScrollView>
+                    )}
+                    {courseDetails?.chapters && <ChapterSection chapters={courseDetails?.chapters} userEnrolledCourses={userEnrolledCourseList} />}
+                </View>
+            </ScrollView>}
+        </>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
         padding: 15,
+        flex: 1
     },
     backButton: {
         marginBottom: 10,
@@ -185,7 +193,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         gap: 10,
-    }
+    },
+    loaderContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });
 
 export default CoursesDetails;

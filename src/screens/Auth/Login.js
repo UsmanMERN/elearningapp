@@ -10,9 +10,11 @@ import google from "../../assets/images/google.png"
 import Colors from '../../utils/Colors'
 import { storeData } from '../../utils/Services';
 import { useAuthContext } from '../../contexts/Authcontext';
+import { createNewUser } from '../../utils/GraphQl';
 
 const Login = () => {
     const { dispatch, isAuthenticated } = useAuthContext()
+    const [isLoading, setIsLoading] = useState(false)
 
     useEffect(() => {
         GoogleSignin.configure({
@@ -22,28 +24,39 @@ const Login = () => {
 
     async function handleLogin() {
         try {
+            setIsLoading(true)
             await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
 
             const { idToken } = await GoogleSignin.signIn();
+
             const googleCredential = auth.GoogleAuthProvider.credential(idToken);
 
             await auth().signInWithCredential(googleCredential);
+
             const currentUser = auth().currentUser;
+
             if (currentUser) {
                 await storeData("login", 'true');
+
                 await dispatch({ type: "LOGIN", payload: currentUser });
+
+                await createNewUser(currentUser.displayName, currentUser.email, currentUser.photoURL, 20).then((resp) => {
+                    dispatch({ type: "ADD_POINTS", payload: resp.upsertUserDetail?.point });
+                })
                 Snackbar.show({
                     text: 'Login Successfully',
                     duration: Snackbar.LENGTH_SHORT,
                     backgroundColor: Colors.PRIMARY,
                     textAlign: 'center',
                     fontFamily: "Outfit-SemiBold",
-                })
+                });
             } else {
                 console.error("Unable to retrieve current user after sign-in.");
             }
         } catch (error) {
             console.error("Error occurred during Google sign-in:", error);
+        } finally {
+            setIsLoading(false)
         }
     }
 
@@ -54,7 +67,7 @@ const Login = () => {
                 <Text style={styles.headingText}>{'</>'}</Text>
                 <Text style={styles.headingText}>CODEBOX</Text>
                 <Text style={styles.paragraphText}>Your Ultimate Programming Learning Box</Text>
-                <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+                <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={isLoading}>
                     <Image source={google} style={styles.logo} />
                     <Text style={styles.loginText}>Sign in with Google</Text>
                 </TouchableOpacity>

@@ -10,8 +10,8 @@ import CoinIcon from "../../assets/images/Coin.png"
 import avatar from "../../assets/images/avatar.png"
 
 export default function Header() {
-    const { user, isAuthenticated } = useAuthContext()
-    // console.log('user', user)
+    const { user, isAuthenticated, points } = useAuthContext()
+
     return (
         <View>
             <View style={styles.container}>
@@ -24,7 +24,7 @@ export default function Header() {
                 </View>
                 <View style={styles.topbar}>
                     <Image source={CoinIcon} style={styles.coinIcon} />
-                    <Text style={styles.nameTxt}>3500</Text>
+                    <Text style={styles.nameTxt}>{points}</Text>
                 </View>
             </View>
 
@@ -39,7 +39,7 @@ export default function Header() {
 const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
-        gap: 10,
+        gap: 30,
         fontFamily: 'Outfit-Regular'
     },
     topbar: {
