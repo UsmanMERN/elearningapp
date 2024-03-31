@@ -1,36 +1,13 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import auth from '@react-native-firebase/auth';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import Header from '../../components/frontend/Header';
-import { storeData } from '../../utils/Services';
-import { useAuthContext } from '../../contexts/Authcontext';
 import Colors from '../../utils/Colors';
 import CourseList from '../../components/frontend/CourseList';
-import Snackbar from 'react-native-snackbar';
 import CourseProgress from '../../components/frontend/CourseProgress';
+import { useAuthContext } from '../../contexts/Authcontext';
 
 const Home = () => {
-    const { dispatch } = useAuthContext();
-
-    const handleLogout = () => {
-        auth().signOut()
-            .then(() => {
-                storeData("login", 'false');
-                dispatch({ type: "LOGOUT", payload: {} });
-                Snackbar.show({
-                    text: 'Logout Successfully',
-                    duration: Snackbar.LENGTH_SHORT,
-                    backgroundColor: Colors.WHITE,
-                    textAlign: 'center',
-                    fontFamily: "Outfit-SemiBold",
-                    textColor: Colors.PRIMARY
-                })
-            })
-            .catch(error => {
-                console.error('Error signing out:', error);
-            });
-    };
-
+    const { points } = useAuthContext()
     return (
         <>
             <ScrollView showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false}>
@@ -38,14 +15,11 @@ const Home = () => {
                     <Header />
                 </View>
                 <View style={{ marginTop: -90 }}>
-                    <CourseProgress level="Advance" textColor={Colors.WHITE} />
+                    <CourseProgress level="Advance" textColor={Colors.WHITE} horizontal={true} cardWidth={225} />
                 </View>
-                <CourseList level="Basic" />
+                <CourseList level="Basic" textColor={points < 0 ? Colors.WHITE : null} />
                 <CourseList level="Moderate" />
                 <CourseList level="Advance" />
-                <TouchableOpacity onPress={handleLogout}>
-                    <Text style={{ color: "#000" }}>Click me</Text>
-                </TouchableOpacity>
             </ScrollView>
         </>
     );

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -8,10 +8,9 @@ import Colors from '../../utils/Colors';
 import { useAuthContext } from '../../contexts/Authcontext';
 import CourseProgressBar from './CourseProgressBar';
 
-
-export default function CourseProgress() {
+export default function CourseProgress({ horizontal, cardWidth, bottomSpace }) {
     const navigation = useNavigation();
-    const { user, points } = useAuthContext()
+    const { user, points } = useAuthContext();
 
     const [isLoading, setIsLoading] = useState(true);
     const [courseList, setCourseList] = useState([]);
@@ -41,6 +40,30 @@ export default function CourseProgress() {
         return null;
     }
 
+    const renderItem = ({ item }) => (
+        <TouchableOpacity onPress={() => navigation.navigate("course-details", { course: item.course })}>
+            <View style={[styles.courseCard, { width: cardWidth, marginBottom: bottomSpace }]}>
+                <Image source={{ uri: item.course?.banner?.url }} style={styles.courseImage} />
+                <View style={styles.courseDetails}>
+                    <Text numberOfLines={1} ellipsizeMode="tail" style={styles.courseTitle}>{item?.course?.name}</Text>
+                    <View style={styles.infoRow}>
+                        <View style={styles.infoItem}>
+                            <Icon name="book-outline" size={24} color="black" />
+                            <Text style={styles.infoText}>{item?.course?.chapters.length} Chapters</Text>
+                        </View>
+                        <View style={styles.infoItem}>
+                            <Icon name="time-outline" size={24} color="black" />
+                            <Text style={[styles.infoText, { maxWidth: 80 }]}>{item?.course?.time}</Text>
+                        </View>
+                    </View>
+                    <Text style={[styles.infoText, { color: Colors.PRIMARY, marginVertical: 8 }]}>
+                        {item?.course?.price == 0 ? 'Free' : `$ ${item?.course?.price}`}
+                    </Text>
+                    <CourseProgressBar completedChapter={item?.completedChapter} totalChapters={item.course?.chapters} />
+                </View>
+            </View>
+        </TouchableOpacity>
+    );
 
     return (
         <View style={styles.container}>
@@ -51,34 +74,9 @@ export default function CourseProgress() {
                 <FlatList
                     data={courseList}
                     keyExtractor={item => item.id}
-                    horizontal={true}
-                    showsHorizontalScrollIndicator={false}
-                    renderItem={({ item }) => {
-                        return (
-                            <TouchableOpacity onPress={() => navigation.navigate("course-details", { course: item.course })}>
-                                <View style={styles.courseCard}>
-                                    <Image source={{ uri: item.course?.banner?.url }} style={styles.courseImage} />
-                                    <View style={styles.courseDetails}>
-                                        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.courseTitle}>{item?.course?.name}</Text>
-                                        <View style={styles.infoRow}>
-                                            <View style={styles.infoItem}>
-                                                <Icon name="book-outline" size={24} color="black" />
-                                                <Text style={styles.infoText}>{item?.course?.chapters.length} Chapters</Text>
-                                            </View>
-                                            <View style={styles.infoItem}>
-                                                <Icon name="time-outline" size={24} color="black" />
-                                                <Text style={[styles.infoText, { maxWidth: 80 }]}>{item?.course?.time}</Text>
-                                            </View>
-                                        </View>
-                                        <Text style={[styles.infoText, { color: Colors.PRIMARY, marginVertical: 8 }]}>
-                                            {item?.course?.price == 0 ? 'Free' : `$ ${item?.course?.price}`}
-                                        </Text>
-                                        <CourseProgressBar completedChapter={item?.completedChapter} totalChapters={item.course?.chapters} />
-                                    </View>
-                                </View>
-                            </TouchableOpacity>
-                        );
-                    }}
+                    horizontal={horizontal}
+                    showsHorizontalScrollIndicator={!horizontal}
+                    renderItem={renderItem}
                 />
             )}
         </View>
@@ -92,14 +90,14 @@ const styles = StyleSheet.create({
     },
     courseCard: {
         padding: 10,
+        marginBottom: 20,
         backgroundColor: Colors.WHITE,
         marginRight: 15,
         borderRadius: 15,
-        flex: 1,
     },
     courseImage: {
         height: 120,
-        width: 210,
+        width: '100%',
         borderRadius: 15,
     },
     courseDetails: {
@@ -109,7 +107,7 @@ const styles = StyleSheet.create({
         color: "#000",
         fontFamily: 'Outfit-SemiBold',
         fontSize: 17,
-        maxWidth: 200,
+        maxWidth: '100%',
     },
     infoRow: {
         flexDirection: 'row',

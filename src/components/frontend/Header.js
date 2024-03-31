@@ -10,7 +10,7 @@ import CoinIcon from "../../assets/images/Coin.png"
 import avatar from "../../assets/images/avatar.png"
 
 export default function Header() {
-    const { user, isAuthenticated, points } = useAuthContext()
+    const { user, points } = useAuthContext()
 
     return (
         <View>
