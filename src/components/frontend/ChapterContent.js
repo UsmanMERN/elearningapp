@@ -17,17 +17,13 @@ export default function ChapterContent() {
     const [currentItemIndex, setCurrentItemIndex] = useState(0);
     const [loading, setLoading] = useState(false);
 
-    // Calculate array size and width
-    const arraySize = params.content.length > 0 ? Array.from({ length: params.content.length }, (_, index) => index + 1) : [0];
-    const progressBarWidth = 100 / (params.content.length > 0 ? params.content.length : 1);
+    const contentRef = React.useRef(null);
 
-    let contentRef;
     const handlePressNext = () => {
         const nextIndex = currentItemIndex + 1;
         if (nextIndex < params.content.length) {
             setCurrentItemIndex(nextIndex);
-            contentRef.scrollToIndex({ animated: true, index: nextIndex });
-            return
+            contentRef.current.scrollToIndex({ animated: true, index: nextIndex });
         }
     };
 
@@ -40,7 +36,6 @@ export default function ChapterContent() {
         }
         return false;
     }
-
 
     const handleFinish = async () => {
         setLoading(true);
@@ -77,149 +72,142 @@ export default function ChapterContent() {
     };
 
     return (
-        <ScrollView style={styles.container}>
+        <ScrollView contentContainerStyle={styles.container}>
             {/* Render progress bars */}
             <View style={styles.progressBarContainer}>
-                {arraySize.map((item, index) => (
-                    <View key={index} style={[styles.progressBar, { width: `${progressBarWidth - 2}%`, backgroundColor: index <= currentItemIndex ? Colors.GREEN : Colors.GRAY, },]} />
+                {params.content.map((_, index) => (
+                    <View key={index} style={[styles.progressBar, { width: `${100 / params.content.length}%`, backgroundColor: index <= currentItemIndex ? Colors.GREEN : Colors.GRAY }]} />
                 ))}
             </View>
             {/* FlatList for content */}
-            <View style={styles.flatListContainer}>
-                {params.content.length > 0 ? (
-                    <FlatList horizontal={true} data={params.content} pagingEnabled showsHorizontalScrollIndicator={false} ref={(ref) => { contentRef = ref }}
-                        onMomentumScrollEnd={(event) => { const contentOffsetX = event.nativeEvent.contentOffset.x; const index = Math.round(contentOffsetX / width); setCurrentItemIndex(index); }}
-                        renderItem={({ item, index }) => (
-                            <View style={styles.contentItem}>
-                                <Text style={styles.contentHeading}>{item.heading}</Text>
-                                <View>
-                                    <RenderHTML source={{ html: item.description.html }} contentWidth={width} tagsStyles={tagsStyles} />
-                                    <View style={{ alignSelf: 'flex-end', marginTop: -20 }}>
-                                        <TouchableOpacity onPress={() => { const newIsRunCodeArray = [...isRunCode]; newIsRunCodeArray[index] = true; setIsRunCode(newIsRunCodeArray); }}>
-                                            <Text style={{ color: Colors.WHITE, paddingVertical: 10, paddingHorizontal: 15, backgroundColor: Colors.PRIMARY, fontFamily: 'Outfit-Bold', borderRadius: 10 }}>Run</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                    {isRunCode[index] ? <View style={{ marginTop: 20 }}>
-                                        <Text style={{ fontSize: 17, fontFamily: "Outfit-SemiBold", color: "#000" }}>Output</Text>
-                                        {item?.output?.html ? <RenderHTML source={{ html: item?.output.html }} contentWidth={width} tagsStyles={tagsOutputStyles} /> : <Text style={styles.noOutputText}>No output available</Text>}
-                                    </View> : null}
-                                    <View style={{ marginTop: 20 }}>
-                                        <TouchableOpacity onPress={loading ? null : (currentItemIndex < params.content.length - 1 ? handlePressNext : handleFinish)} style={[styles.button, { backgroundColor: currentItemIndex < params.content.length - 1 ? Colors.PRIMARY : Colors.GREEN }]} disabled={loading}>
-                                            {loading ? <ActivityIndicator color={Colors.WHITE} /> : <Text style={styles.buttonText}>{currentItemIndex < params.content.length - 1 ? "Next" : "Finish"}</Text>}
-                                        </TouchableOpacity>
-
-                                    </View>
-                                </View>
+            <FlatList
+                horizontal
+                data={params.content}
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                ref={contentRef}
+                onMomentumScrollEnd={(event) => {
+                    const contentOffsetX = event.nativeEvent.contentOffset.x;
+                    const index = Math.round(contentOffsetX / width);
+                    setCurrentItemIndex(index);
+                }}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item, index }) => (
+                    <View style={styles.contentItem}>
+                        <Text style={styles.contentHeading}>{item.heading}</Text>
+                        <RenderHTML source={{ html: item.description.html }} contentWidth={width} tagsStyles={tagsStyles} />
+                        <View style={styles.runButtonContainer}>
+                            <TouchableOpacity onPress={() => setIsRunCode(prevState => [...prevState.slice(0, index), true, ...prevState.slice(index + 1)])}>
+                                <Text style={styles.runButtonText}>Run</Text>
+                            </TouchableOpacity>
+                        </View>
+                        {isRunCode[index] && (
+                            <View style={styles.outputContainer}>
+                                <Text style={styles.outputTitle}>Output</Text>
+                                {item.output?.html ? (
+                                    <RenderHTML source={{ html: item.output.html }} contentWidth={width} tagsStyles={tagsOutputStyles} />
+                                ) : (
+                                    <Text style={styles.noOutputText}>No output available</Text>
+                                )}
                             </View>
                         )}
-                    />
-                ) : (
-                    <Text style={styles.noContentText}>No content available</Text>
+                        <TouchableOpacity onPress={loading ? null : (index < params.content.length - 1 ? handlePressNext : handleFinish)} style={[styles.button, { backgroundColor: index < params.content.length - 1 ? Colors.PRIMARY : Colors.GREEN }]} disabled={loading}>
+                            {loading ? (
+                                <ActivityIndicator color={Colors.WHITE} />
+                            ) : (
+                                <Text style={styles.buttonText}>{index < params.content.length - 1 ? "Next" : "Finish"}</Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
                 )}
-            </View>
+            />
         </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        paddingHorizontal: 10,
+        flexGrow: 1,
     },
     progressBarContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
-        gap: 10,
         paddingVertical: 10,
     },
     progressBar: {
-        borderRadius: 10,
         height: 10,
-        flex: 1,
-    },
-    flatListContainer: {
-        justifyContent: 'center',
-        marginVertical: 5,
-        width: '100%',
+        borderRadius: 10,
+        marginRight: 2,
     },
     contentItem: {
-        width: Dimensions.get('screen').width * 0.92,
-        paddingVertical: 5,
-        marginHorizontal: 5,
-        justifyContent: 'center',
-        alignItems: 'center',
+        width: Dimensions.get('screen').width,
+        padding: 10,
     },
     contentHeading: {
-        color: '#000',
         fontSize: 22,
         fontFamily: 'Outfit-SemiBold',
-        marginTop: 15
+        color: Colors.BLACK,
+        marginTop: 15,
     },
-    progressBarText: {
-        color: '#000',
-        marginBottom: 10,
+    runButtonContainer: {
+        alignSelf: 'flex-end',
+        marginTop: -20,
     },
-    contentText: {
-        color: '#000',
-        marginTop: 10,
+    runButtonText: {
+        color: Colors.WHITE,
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        backgroundColor: Colors.PRIMARY,
+        fontFamily: 'Outfit-Bold',
+        borderRadius: 10,
     },
-    noContentText: {
-        textAlign: 'center',
-        fontSize: 20,
-        marginTop: 50,
-        color: Colors.GRAY,
-        fontStyle: 'italic'
-    },
-    noOutputText: {
-        textAlign: 'center',
-        fontSize: 16,
-        marginTop: 10,
-        color: Colors.PRIMARY,
-        fontStyle: 'italic'
-    },
-    buttonContainer: {
-        alignItems: 'flex-end',
+    outputContainer: {
         marginTop: 20,
     },
+    outputTitle: {
+        fontSize: 17,
+        fontFamily: 'Outfit-SemiBold',
+        color: Colors.BLACK,
+    },
+    noOutputText: {
+        fontSize: 16,
+        fontStyle: 'italic',
+        color: Colors.PRIMARY,
+        textAlign: 'center',
+        marginTop: 10,
+    },
     button: {
+        marginTop: 20,
         paddingVertical: 10,
         paddingHorizontal: 20,
         borderRadius: 10,
+        alignSelf: 'center',
     },
     buttonText: {
         color: Colors.WHITE,
         fontFamily: 'Outfit-Bold',
         fontSize: 16,
-        textAlign: 'center'
+        textAlign: 'center',
     },
 });
+
 const tagsStyles = {
     body: {
         whiteSpace: 'normal',
-        color: 'gray',
-        fontFamily: "Outfit-Regular",
-        fontSize: 17
-    },
-    code: {
-        color: '#fff',
-        backgroundColor: "#000",
-        padding: 20,
-        borderRadius: 17,
-        fontSize: 12,
-        fontFamily: "Outfit-SemiBold",
+        color: Colors.GRAY,
+        fontFamily: 'Outfit-Regular',
+        fontSize: 17,
     },
 };
+
 const tagsOutputStyles = {
     body: {
         whiteSpace: 'normal',
-        fontFamily: "Outfit-Regular",
+        fontFamily: 'Outfit-Regular',
         fontSize: 17,
-        color: '#fff',
-        backgroundColor: "#000",
+        color: Colors.WHITE,
+        backgroundColor: Colors.BLACK,
         padding: 20,
         borderRadius: 17,
-        fontSize: 12,
-        fontFamily: "Outfit-SemiBold",
     },
-    code: {
-    }
 };
